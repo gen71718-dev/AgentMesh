@@ -82,4 +82,3 @@ register(
 )
 
 __all__ = ["web_search"]
-

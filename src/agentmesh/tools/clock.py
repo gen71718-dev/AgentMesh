@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from langchain_core.tools import tool
@@ -20,7 +20,7 @@ def current_time(timezone_name: str = "UTC") -> str:
     """
     name = (timezone_name or "UTC").strip() or "UTC"
     try:
-        tz = timezone.utc if name.upper() == "UTC" else ZoneInfo(name)
+        tz = UTC if name.upper() == "UTC" else ZoneInfo(name)
     except (ZoneInfoNotFoundError, ValueError):
         return f"unknown timezone {name!r}; use an IANA name such as 'Asia/Shanghai'"
     now = datetime.now(tz)
@@ -37,4 +37,3 @@ register(
 )
 
 __all__ = ["current_time"]
-

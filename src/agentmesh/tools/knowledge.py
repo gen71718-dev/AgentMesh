@@ -64,7 +64,9 @@ def search(query: str, top_k: int = 3) -> list[Hit]:
     hits: list[Hit] = []
     for path in _iter_documents(root):
         best: Hit | None = None
-        for number, line in enumerate(path.read_text(encoding="utf-8", errors="replace").splitlines(), start=1):
+        for number, line in enumerate(
+            path.read_text(encoding="utf-8", errors="replace").splitlines(), start=1
+        ):
             overlap = wanted & _tokens(line)
             if not overlap:
                 continue
@@ -118,4 +120,3 @@ register(
 )
 
 __all__ = ["Hit", "knowledge_search", "search"]
-

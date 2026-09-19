@@ -66,6 +66,17 @@ class MockChatModel(BaseChatModel):
     def _identifying_params(self) -> dict[str, Any]:
         return {"model_name": self.model_name, "persona": self.persona}
 
+    def bind_tools(self, tools: Any, *, tool_choice: str | None = None, **kwargs: Any) -> Any:
+        """Attach ``tools`` to a copy of this model.
+
+        ``_generate`` reads the tool list back out of its keyword arguments, which
+        mirrors how LangChain chat models hand tool calling to a model.
+        """
+        bound = dict(kwargs)
+        if tool_choice is not None:
+            bound["tool_choice"] = tool_choice
+        return self.bind(tools=list(tools), **bound)
+
     # ------------------------------------------------------------ generation
     def _generate(
         self,
@@ -96,7 +107,9 @@ class MockChatModel(BaseChatModel):
         args = _synthesise_args(schema["function"].get("parameters") or {}, self._extract_task(messages))
         return AIMessage(
             content=f"[mock] calling `{name}` to gather evidence.",
-            tool_calls=[{"name": name, "args": args, "id": f"call_{name}_{self._cursor}", "type": "tool_call"}],
+            tool_calls=[
+                {"name": name, "args": args, "id": f"call_{name}_{self._cursor}", "type": "tool_call"}
+            ],
         )
 
     def _planner_answer(self, messages: list[BaseMessage]) -> str:
@@ -161,7 +174,10 @@ def _normalise_tools(raw: Any) -> list[dict[str, Any]]:
             if not name:
                 continue
             schema = getattr(item, "args_schema", None)
-            parameters = schema.model_json_schema() if hasattr(schema, "model_json_schema") else {}
+            if schema is not None and hasattr(schema, "model_json_schema"):
+                parameters = schema.model_json_schema()
+            else:
+                parameters = {}
             normalised.append(
                 {"type": "function", "function": {"name": name, "description": "", "parameters": parameters}}
             )
@@ -195,4 +211,3 @@ def _synthesise_args(parameters: dict[str, Any], task: str) -> dict[str, Any]:
 
 
 __all__ = ["MockChatModel"]
-

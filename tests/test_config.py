@@ -40,5 +40,7 @@ def test_python_tool_is_reported_as_risky() -> None:
 
 
 def test_a_default_configuration_has_no_warnings() -> None:
-    assert Settings(llm_provider="mock", state_backend="memory", execution_mode="inline").validate_runtime() == []
-
+    assert (
+        Settings(llm_provider="mock", state_backend="memory", execution_mode="inline").validate_runtime()
+        == []
+    )

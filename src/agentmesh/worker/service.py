@@ -84,7 +84,7 @@ class WorkerService:
                 log.warning("dropping unknown run from the queue", extra={"run_id": item.run_id})
             except asyncio.CancelledError:
                 raise
-            except Exception:  # noqa: BLE001 - one bad run must not stop the worker
+            except Exception:
                 log.exception("unhandled failure while executing a run", extra={"run_id": item.run_id})
             finally:
                 try:
@@ -114,9 +114,8 @@ class WorkerService:
 async def _sleep_or_stop(stop: asyncio.Event, seconds: float) -> None:
     try:
         await asyncio.wait_for(stop.wait(), timeout=seconds)
-    except (TimeoutError, asyncio.TimeoutError):
+    except TimeoutError:
         return
 
 
 __all__ = ["WorkerService"]
-

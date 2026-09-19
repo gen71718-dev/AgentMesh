@@ -20,8 +20,8 @@ os.environ["AGENTMESH_EXECUTION_MODE"] = "inline"
 os.environ["AGENTMESH_LOG_LEVEL"] = "WARNING"
 os.environ["AGENTMESH_LOG_JSON"] = "false"
 
-from agentmesh.config import Settings, reload_settings  # noqa: E402
-from agentmesh.main import create_app  # noqa: E402
+from agentmesh.config import Settings, reload_settings
+from agentmesh.main import create_app
 
 TERMINAL_STATUSES = {"succeeded", "failed", "cancelled"}
 
@@ -59,13 +59,13 @@ async def client(app) -> AsyncClient:
 def wait_run(client: AsyncClient):
     """``await wait_run(run_id)`` -> the terminal run record."""
 
-    async def _wait(run_id: str, timeout: float = 15.0) -> dict:
+    async def _wait(run_id: str, timeout: float = 15.0) -> dict:  # noqa: ASYNC109
         return await wait_for_run(client, run_id, timeout=timeout)
 
     return _wait
 
 
-async def wait_for_run(client: AsyncClient, run_id: str, *, timeout: float = 15.0) -> dict:
+async def wait_for_run(client: AsyncClient, run_id: str, *, timeout: float = 15.0) -> dict:  # noqa: ASYNC109
     """Poll a run until it reaches a terminal status."""
     loop = asyncio.get_running_loop()
     deadline = loop.time() + timeout

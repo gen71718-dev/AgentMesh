@@ -30,10 +30,10 @@ class RunStore(ABC):
 
     name: str = "store"
 
-    async def startup(self) -> None:  # pragma: no cover - trivial default
+    async def startup(self) -> None:  # pragma: no cover - trivial default  # noqa: B027
         """Open connections / create groups. Must be idempotent."""
 
-    async def shutdown(self) -> None:  # pragma: no cover - trivial default
+    async def shutdown(self) -> None:  # pragma: no cover - trivial default  # noqa: B027
         """Release connections."""
 
     # ---------------------------------------------------------- run records
@@ -101,4 +101,3 @@ class RunStore(ABC):
 
 
 __all__ = ["QueueItem", "RunStore"]
-

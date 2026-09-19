@@ -76,8 +76,8 @@ def run_snippet(code: str) -> str:
     namespace: dict[str, object] = {}
     try:
         with contextlib.redirect_stdout(buffer), contextlib.redirect_stderr(buffer):
-            exec(compile(source, "<agentmesh-repl>", "exec"), dict(_SAFE_GLOBALS), namespace)  # noqa: S102
-    except Exception as exc:  # noqa: BLE001 - surface every failure to the model
+            exec(compile(source, "<agentmesh-repl>", "exec"), dict(_SAFE_GLOBALS), namespace)
+    except Exception as exc:
         captured = buffer.getvalue()
         return f"python_repl raised {type(exc).__name__}: {exc}\n{captured}"[:MAX_OUTPUT_CHARS]
 

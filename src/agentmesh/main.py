@@ -104,7 +104,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         )
 
     @app.middleware("http")
-    async def request_context(request: Request, call_next):  # type: ignore[no-untyped-def]
+    async def request_context(request: Request, call_next):
         request_id = request.headers.get("X-Request-ID") or uuid.uuid4().hex[:16]
         request.state.request_id = request_id
         started = time.perf_counter()
@@ -134,7 +134,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
 
 def _register_error_handlers(app: FastAPI) -> None:
-    def handler(exc_type: type[Exception], code: int):  # type: ignore[no-untyped-def]
+    def handler(exc_type: type[Exception], code: int):
         async def _handle(request: Request, exc: Exception) -> JSONResponse:
             return JSONResponse(status_code=code, content={"detail": str(exc), "error": exc_type.__name__})
 
@@ -142,7 +142,9 @@ def _register_error_handlers(app: FastAPI) -> None:
 
     app.add_exception_handler(RunNotFound, handler(RunNotFound, status.HTTP_404_NOT_FOUND))
     app.add_exception_handler(AgentNotFound, handler(AgentNotFound, status.HTTP_404_NOT_FOUND))
-    app.add_exception_handler(ConfigurationError, handler(ConfigurationError, status.HTTP_500_INTERNAL_SERVER_ERROR))
+    app.add_exception_handler(
+        ConfigurationError, handler(ConfigurationError, status.HTTP_500_INTERNAL_SERVER_ERROR)
+    )
     app.add_exception_handler(StoreError, handler(StoreError, status.HTTP_503_SERVICE_UNAVAILABLE))
     app.add_exception_handler(AgentMeshError, handler(AgentMeshError, status.HTTP_500_INTERNAL_SERVER_ERROR))
 

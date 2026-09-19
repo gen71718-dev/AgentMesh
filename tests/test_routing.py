@@ -129,4 +129,3 @@ def test_errors_are_surfaced_when_nothing_succeeded() -> None:
 
 def test_no_reports_at_all() -> None:
     assert compose_final_answer("objective", {}, {}) == "No specialist produced a report for this objective."
-

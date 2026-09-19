@@ -118,7 +118,7 @@ class RunExecutor:
         except asyncio.CancelledError:
             await self._finish(record, RunStatus.FAILED, error="the worker was shut down mid-run")
             raise
-        except Exception as exc:  # noqa: BLE001 - the record is the source of truth
+        except Exception as exc:
             log.exception("run failed", extra={"run_id": run_id})
             return await self._finish(record, RunStatus.FAILED, error=f"{type(exc).__name__}: {exc}")
 
@@ -127,7 +127,10 @@ class RunExecutor:
             record,
             RunStatus.SUCCEEDED,
             result=answer or "The run completed but produced no answer.",
-            data={"trace": (final or {}).get("trace") or [], "results": list((final or {}).get("results") or {})},
+            data={
+                "trace": (final or {}).get("trace") or [],
+                "results": list((final or {}).get("results") or {}),
+            },
         )
 
     async def _finish(

@@ -61,7 +61,7 @@ class Settings(BaseSettings):
     redis_url: str = "redis://localhost:6379/0"
     redis_namespace: str = "agentmesh"
     redis_ttl_seconds: int = Field(default=86_400, ge=60)
-    redis_stream_maxlen: int = Field(default=5_000, ge=100)
+    redis_stream_maxlen: int = Field(default=5_000, ge=1)
     redis_socket_timeout: float = Field(default=5.0, gt=0)
 
     # -------------------------------------------------------------- storage

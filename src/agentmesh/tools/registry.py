@@ -53,7 +53,11 @@ def tool(
     """Decorator that registers a zero-argument factory as a tool."""
 
     def decorator(factory: Callable[[], BaseTool]) -> Callable[[], BaseTool]:
-        register(ToolSpec(name=name, description=description, factory=factory, tags=tags, availability=availability))
+        register(
+            ToolSpec(
+                name=name, description=description, factory=factory, tags=tags, availability=availability
+            )
+        )
         return factory
 
     return decorator
@@ -117,4 +121,3 @@ __all__ = [
     "tool",
     "tool_names",
 ]
-

@@ -52,7 +52,9 @@ def test_calculator_tool_reports_errors_instead_of_raising() -> None:
 
 
 def test_builtin_tools_are_registered() -> None:
-    assert {"calculator", "current_time", "knowledge_search", "web_search", "python_repl"} <= set(tool_names())
+    assert {"calculator", "current_time", "knowledge_search", "web_search", "python_repl"} <= set(
+        tool_names()
+    )
     assert get_tool("calculator").name == "calculator"
 
 
@@ -71,7 +73,9 @@ def test_unknown_tool_raises() -> None:
 
 
 def test_python_repl_is_off_by_default(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr("agentmesh.tools.python_repl.get_settings", lambda: Settings(enable_python_tool=False))
+    monkeypatch.setattr(
+        "agentmesh.tools.python_repl.get_settings", lambda: Settings(enable_python_tool=False)
+    )
     assert "disabled" in python_repl.invoke({"code": "print(1)"})
 
 

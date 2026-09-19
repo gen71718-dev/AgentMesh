@@ -10,14 +10,14 @@ from typing import Annotated
 
 from fastapi import Depends, Request
 
-from agentmesh.config import Settings, get_settings
+from agentmesh.config import Settings
 from agentmesh.events.bus import EventBus
 from agentmesh.storage.base import RunStore
 from agentmesh.worker.executor import GraphRegistry, RunExecutor
 
 
-def settings_dep() -> Settings:
-    return get_settings()
+def settings_dep(request: Request) -> Settings:
+    return request.app.state.settings
 
 
 def store_dep(request: Request) -> RunStore:
@@ -54,4 +54,3 @@ __all__ = [
     "settings_dep",
     "store_dep",
 ]
-

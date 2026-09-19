@@ -151,4 +151,3 @@ for _definition in BUILTIN_AGENTS:
     register_agent(_definition)
 
 __all__ = ["ANALYST", "BUILTIN_AGENTS", "CODER", "CRITIC", "RESEARCHER", "WRITER"]
-

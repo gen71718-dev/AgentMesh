@@ -92,10 +92,10 @@ def _eval(node: ast.AST) -> Any:
             raise CalculatorError("division by zero") from exc
 
     if isinstance(node, ast.UnaryOp):
-        op = _UNARY_OPS.get(type(node.op))
-        if op is None:
+        unary = _UNARY_OPS.get(type(node.op))
+        if unary is None:
             raise CalculatorError(f"unary operator {type(node.op).__name__} is not allowed")
-        return _guard_number(op(_eval(node.operand)))
+        return _guard_number(unary(_eval(node.operand)))
 
     if isinstance(node, ast.Name):
         if node.id in _CONSTANTS:
@@ -155,4 +155,3 @@ register(
 )
 
 __all__ = ["CalculatorError", "calculator", "evaluate"]
-

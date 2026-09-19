@@ -3,8 +3,8 @@
 from __future__ import annotations
 
 import uuid
-from datetime import datetime, timezone
-from enum import Enum
+from datetime import UTC, datetime
+from enum import StrEnum
 from typing import Any
 
 from pydantic import BaseModel, Field, field_validator
@@ -12,14 +12,14 @@ from pydantic import BaseModel, Field, field_validator
 
 def utcnow() -> datetime:
     """Timezone-aware ``now`` - never use naive datetimes in this codebase."""
-    return datetime.now(timezone.utc)
+    return datetime.now(UTC)
 
 
 def new_id(prefix: str) -> str:
     return f"{prefix}_{uuid.uuid4().hex[:16]}"
 
 
-class RunStatus(str, Enum):
+class RunStatus(StrEnum):
     QUEUED = "queued"
     RUNNING = "running"
     SUCCEEDED = "succeeded"
@@ -34,7 +34,7 @@ class RunStatus(str, Enum):
 _TERMINAL_STATUSES = frozenset({RunStatus.SUCCEEDED, RunStatus.FAILED, RunStatus.CANCELLED})
 
 
-class EventType(str, Enum):
+class EventType(StrEnum):
     RUN_QUEUED = "run.queued"
     RUN_STARTED = "run.started"
     RUN_COMPLETED = "run.completed"

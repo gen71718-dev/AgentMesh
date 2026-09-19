@@ -19,7 +19,9 @@ def get_agent(name: str) -> AgentDefinition:
     try:
         return _REGISTRY[name]
     except KeyError as exc:
-        raise AgentNotFound(f"unknown agent {name!r}; available: {', '.join(agent_names()) or 'none'}") from exc
+        raise AgentNotFound(
+            f"unknown agent {name!r}; available: {', '.join(agent_names()) or 'none'}"
+        ) from exc
 
 
 def has_agent(name: str) -> bool:
@@ -64,4 +66,3 @@ __all__ = [
     "reset",
     "resolve_agents",
 ]
-

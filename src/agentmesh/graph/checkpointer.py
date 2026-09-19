@@ -52,7 +52,7 @@ async def open_checkpointer(settings: Settings | None = None) -> AsyncIterator[A
         if setup is not None:
             try:
                 await setup()
-            except Exception as exc:  # noqa: BLE001 - already-configured indexes are fine
+            except Exception as exc:
                 log.debug("checkpointer asetup() was not needed", extra={"error": str(exc)})
         log.info("redis checkpointer ready", extra={"url": settings.masked_redis_url})
         yield saver
@@ -62,4 +62,3 @@ async def open_checkpointer(settings: Settings | None = None) -> AsyncIterator[A
 
 
 __all__ = ["memory_saver", "open_checkpointer"]
-

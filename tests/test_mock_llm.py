@@ -42,7 +42,9 @@ async def test_the_planner_picks_the_first_candidate_that_has_not_reported() -> 
         steps=2,
         max_steps=8,
     )
-    response = await model.ainvoke([SystemMessage(content=SUPERVISOR_SYSTEM_PROMPT), HumanMessage(content=prompt)])
+    response = await model.ainvoke(
+        [SystemMessage(content=SUPERVISOR_SYSTEM_PROMPT), HumanMessage(content=prompt)]
+    )
     assert "NEXT: writer" in response.content
 
 

@@ -1,6 +1,6 @@
 """Submit a task to a running AgentMesh API and print the answer.
 
-    python examples/quickstart.py "Explain Redis consumer groups"
+python examples/quickstart.py "Explain Redis consumer groups"
 """
 
 from __future__ import annotations

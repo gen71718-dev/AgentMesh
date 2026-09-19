@@ -50,7 +50,9 @@ class EventBus:
         try:
             return await self._store.append_event(event)
         except StoreError as exc:
-            log.warning("event dropped", extra={"run_id": run_id, "type": event_type.value, "error": str(exc)})
+            log.warning(
+                "event dropped", extra={"run_id": run_id, "type": event_type.value, "error": str(exc)}
+            )
             return event
 
     async def log(self, run_id: str, message: str, *, agent: str | None = None, **data: Any) -> RunEvent:
@@ -84,4 +86,3 @@ def reset_bus() -> None:
 
 
 __all__ = ["EventBus", "get_bus", "init_bus", "reset_bus", "try_get_bus"]
-

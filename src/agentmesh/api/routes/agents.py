@@ -31,4 +31,3 @@ async def list_tools_route() -> list[ToolInfo]:
 
 
 __all__ = ["router"]
-

@@ -76,7 +76,7 @@ class RedisStore(RunStore):
     async def shutdown(self) -> None:
         if self._redis is None:
             return
-        closer = getattr(self._redis, "aclose", None) or getattr(self._redis, "close")
+        closer = getattr(self._redis, "aclose", None) or self._redis.close
         await closer()
         self._redis = None
 
@@ -133,7 +133,7 @@ class RedisStore(RunStore):
             raise StoreError(f"cannot read run {run_id}: {exc}") from exc
         if not payload:
             return None
-        return _parse_record(payload)
+        return _parse_record(_text(payload))
 
     async def list_runs(self, limit: int = 50, status: RunStatus | None = None) -> list[RunRecord]:
         try:
@@ -141,7 +141,7 @@ class RedisStore(RunStore):
             run_ids = await self._client.zrevrange(self._index_key, 0, max(fetch - 1, 0))
             if not run_ids:
                 return []
-            payloads = await self._client.mget([self._run_key(run_id) for run_id in run_ids])
+            payloads = await self._client.mget([self._run_key(_text(run_id)) for run_id in run_ids])
         except RedisError as exc:
             raise StoreError(f"cannot list runs: {exc}") from exc
 
@@ -149,7 +149,7 @@ class RedisStore(RunStore):
         for payload in payloads:
             if not payload:
                 continue
-            record = _parse_record(payload)
+            record = _parse_record(_text(payload))
             if record is not None:
                 records.append(record)
         if status is not None:
@@ -173,7 +173,7 @@ class RedisStore(RunStore):
             await self._client.expire(self._events_key(run_id), self._settings.redis_ttl_seconds)
         except RedisError as exc:
             raise StoreError(f"cannot append event {event.type} for {run_id}: {exc}") from exc
-        event.id = stream_id
+        event.id = _text(stream_id)
         return event
 
     async def read_events(
@@ -188,10 +188,10 @@ class RedisStore(RunStore):
         try:
             if block_ms:
                 response = await self._client.xread({key: after or "0"}, count=limit, block=int(block_ms))
-                entries = response[0][1] if response else []
+                entries = _xread_entries(response)
             else:
-                entries = await self._client.xrange(
-                    key, min=f"({after}" if after else "-", max="+", count=limit
+                entries = _stream_entries(
+                    await self._client.xrange(key, min=f"({after}" if after else "-", max="+", count=limit)
                 )
         except RedisError as exc:
             raise StoreError(f"cannot read events for {run_id}: {exc}") from exc
@@ -238,11 +238,10 @@ class RedisStore(RunStore):
             raise StoreError(f"cannot read from the run queue: {exc}") from exc
         if not response:
             return None
-        for _stream, entries in response:
-            for stream_id, fields in entries:
-                run_id = fields.get("run_id")
-                if run_id:
-                    return QueueItem(run_id=run_id, token=stream_id)
+        for stream_id, fields in _xread_entries(response):
+            run_id = fields.get("run_id")
+            if run_id:
+                return QueueItem(run_id=run_id, token=stream_id)
         return None
 
     async def ack_run(self, item: QueueItem) -> None:
@@ -264,7 +263,12 @@ class RedisStore(RunStore):
         """Reclaim messages from workers that crashed before acknowledging."""
         try:
             result: Any = await self._client.xautoclaim(
-                self._queue_key, self._group, self._consumer, min_idle_time=min_idle_ms, start_id="0-0", count=limit
+                self._queue_key,
+                self._group,
+                self._consumer,
+                min_idle_time=min_idle_ms,
+                start_id="0-0",
+                count=limit,
             )
         except (RedisError, ResponseError) as exc:
             log.warning("XAUTOCLAIM failed", extra={"error": str(exc)})
@@ -280,6 +284,32 @@ class RedisStore(RunStore):
         if reclaimed:
             log.info("reclaimed stale queue items", extra={"count": len(reclaimed)})
         return reclaimed
+
+
+def _text(value: Any) -> str:
+    """redis-py types every reply as ``bytes | str``: ``decode_responses`` is a
+    runtime flag, so the decoding lives here instead of on each call site."""
+    if isinstance(value, bytes):
+        return value.decode("utf-8", "replace")
+    if isinstance(value, str):
+        return value
+    return "" if value is None else str(value)
+
+
+def _stream_entries(reply: Any) -> list[tuple[str, dict[str, str]]]:
+    """Normalise an ``XRANGE``/``XREAD`` batch into ``(stream_id, fields)`` pairs."""
+    pairs: list[tuple[str, dict[str, str]]] = []
+    for stream_id, fields in reply or []:
+        pairs.append((_text(stream_id), {_text(key): _text(item) for key, item in (fields or {}).items()}))
+    return pairs
+
+
+def _xread_entries(reply: Any) -> list[tuple[str, dict[str, str]]]:
+    """Flatten an ``XREAD``/``XREADGROUP`` reply: ``[[stream, batch], ...]``."""
+    entries: list[tuple[str, dict[str, str]]] = []
+    for _stream, batch in reply or []:
+        entries.extend(_stream_entries(batch))
+    return entries
 
 
 def _parse_record(payload: str) -> RunRecord | None:

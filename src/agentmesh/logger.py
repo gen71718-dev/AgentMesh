@@ -22,7 +22,7 @@ class JsonFormatter(logging.Formatter):
         self._service = service
         self._extra_keys: tuple[str, ...] = ()
 
-    def format(self, record: logging.LogRecord) -> str:  # noqa: A003 - stdlib contract
+    def format(self, record: logging.LogRecord) -> str:
         payload: dict[str, Any] = {
             "ts": self.formatTime(record, "%Y-%m-%dT%H:%M:%S%z"),
             "level": record.levelname.lower(),
@@ -73,4 +73,3 @@ def get_logger(name: str | None = None) -> logging.Logger:
 
 
 __all__ = ["JsonFormatter", "configure_logging", "get_logger"]
-

@@ -22,7 +22,12 @@ from agentmesh.agents.spec import AgentDefinition
 from agentmesh.config import Settings, get_settings
 from agentmesh.errors import RunCancelled
 from agentmesh.events.bus import try_get_bus
-from agentmesh.graph.prompts import SUPERVISOR_SYSTEM_PROMPT, build_supervisor_prompt, clip, compose_final_answer
+from agentmesh.graph.prompts import (
+    SUPERVISOR_SYSTEM_PROMPT,
+    build_supervisor_prompt,
+    clip,
+    compose_final_answer,
+)
 from agentmesh.graph.routing import parse_route
 from agentmesh.graph.state import AgentState
 from agentmesh.llm.factory import build_chat_model
@@ -62,7 +67,9 @@ def build_graph(
             raise RunCancelled(f"run {run_id} was cancelled")
 
         if not remaining or steps > max_steps:
-            reason = "no specialist remains" if not remaining else f"the {max_steps} step budget was exhausted"
+            reason = (
+                "no specialist remains" if not remaining else f"the {max_steps} step budget was exhausted"
+            )
             return _finalize(state, steps, reason, completed, results, errors)
 
         prompt = build_supervisor_prompt(
@@ -76,9 +83,7 @@ def build_graph(
         )
         model = supervisor_model or build_chat_model("supervisor", temperature=0.0, settings=settings)
         response = await asyncio.wait_for(
-            model.ainvoke(
-                [SystemMessage(content=SUPERVISOR_SYSTEM_PROMPT), HumanMessage(content=prompt)]
-            ),
+            model.ainvoke([SystemMessage(content=SUPERVISOR_SYSTEM_PROMPT), HumanMessage(content=prompt)]),
             timeout=settings.llm_timeout_seconds,
         )
         decision = parse_route(message_text(response), remaining)

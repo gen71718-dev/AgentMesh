@@ -73,7 +73,7 @@ def _build(provider: str, role: str, model: str, temperature: float, settings: S
             from langchain_anthropic import ChatAnthropic
         except ImportError as exc:  # pragma: no cover - optional dependency
             raise ConfigurationError(_missing("anthropic")) from exc
-        return ChatAnthropic(  # type: ignore[call-arg]
+        return ChatAnthropic(
             model=model,
             temperature=temperature,
             api_key=settings.anthropic_api_key or None,

@@ -81,7 +81,9 @@ class AgentRuntime:
         )
         self._tools = get_tools(definition.tools) if tools is None else tools
         self._tools_by_name = {tool.name: tool for tool in self._tools}
-        self._max_iterations = max_iterations or min(definition.max_iterations, self._settings.max_tool_iterations)
+        self._max_iterations = max_iterations or min(
+            definition.max_iterations, self._settings.max_tool_iterations
+        )
 
     @property
     def definition(self) -> AgentDefinition:
@@ -96,7 +98,9 @@ class AgentRuntime:
         records: list[ToolCallRecord] = []
         iterations = 0
 
-        await self._emit(run_id, EventType.AGENT_STARTED, f"{name} started", {"tools": sorted(self._tools_by_name)})
+        await self._emit(
+            run_id, EventType.AGENT_STARTED, f"{name} started", {"tools": sorted(self._tools_by_name)}
+        )
         started = time.perf_counter()
 
         try:
@@ -115,7 +119,7 @@ class AgentRuntime:
             text = self._final_text(messages)
         except asyncio.CancelledError:
             raise
-        except Exception as exc:  # noqa: BLE001 - one agent must not kill the run
+        except Exception as exc:
             log.warning("agent failed", extra={"run_id": run_id, "agent": name, "error": str(exc)})
             duration_ms = int((time.perf_counter() - started) * 1000)
             await self._emit(
@@ -146,7 +150,9 @@ class AgentRuntime:
                 "preview": text[:MAX_EVENT_CHARS],
             },
         )
-        return AgentResult(agent=name, text=text, iterations=iterations, tool_calls=records, messages=messages)
+        return AgentResult(
+            agent=name, text=text, iterations=iterations, tool_calls=records, messages=messages
+        )
 
     # ------------------------------------------------------------------ internals
     async def _invoke_tool(
@@ -178,13 +184,15 @@ class AgentRuntime:
                 ok, output = True, stringify_tool_output(await tool.ainvoke(args))
             except asyncio.CancelledError:
                 raise
-            except Exception as exc:  # noqa: BLE001 - tools report, never crash
+            except Exception as exc:
                 ok, output = False, f"error: {type(exc).__name__}: {exc}"
         duration_ms = int((time.perf_counter() - started) * 1000)
         output = output[:MAX_OBSERVATION_CHARS]
 
         records.append(
-            ToolCallRecord(name=name, args=args, ok=ok, output=output[:MAX_EVENT_CHARS], duration_ms=duration_ms)
+            ToolCallRecord(
+                name=name, args=args, ok=ok, output=output[:MAX_EVENT_CHARS], duration_ms=duration_ms
+            )
         )
         await self._emit(
             run_id,

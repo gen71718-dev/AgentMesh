@@ -1,6 +1,6 @@
 """Follow a run's progress over Server-Sent Events.
 
-    python examples/stream_events.py "Summarise our incident runbook"
+python examples/stream_events.py "Summarise our incident runbook"
 """
 
 from __future__ import annotations

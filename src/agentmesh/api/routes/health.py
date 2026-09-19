@@ -51,7 +51,7 @@ async def readyz(
 @router.get("/metrics", response_class=PlainTextResponse, summary="Prometheus-style metrics")
 async def metrics(settings: SettingsDep, store: StoreDep) -> PlainTextResponse:
     records = await store.list_runs(limit=settings.run_history_limit)
-    counts = {member: 0 for member in RunStatus}
+    counts = dict.fromkeys(RunStatus, 0)
     for record in records:
         counts[record.status] += 1
 
@@ -71,7 +71,7 @@ async def metrics(settings: SettingsDep, store: StoreDep) -> PlainTextResponse:
 async def _safe_queue_depth(store: RunStore) -> int:
     try:
         return await store.queue_depth()
-    except Exception:  # noqa: BLE001 - probes must never raise
+    except Exception:
         return -1
 
 

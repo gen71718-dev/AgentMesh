@@ -103,7 +103,7 @@ class MemoryStore(RunStore):
                 return []
             try:
                 await asyncio.wait_for(signal.wait(), timeout=remaining)
-            except (TimeoutError, asyncio.TimeoutError):
+            except TimeoutError:
                 return []
 
     # ---------------------------------------------------------- cancellation
@@ -127,7 +127,7 @@ class MemoryStore(RunStore):
     async def dequeue_run(self, *, timeout_s: float = 5.0) -> QueueItem | None:
         try:
             await asyncio.wait_for(self._queue_signal.wait(), timeout=timeout_s)
-        except (TimeoutError, asyncio.TimeoutError):
+        except TimeoutError:
             return None
         async with self._lock:
             if not self._queue:

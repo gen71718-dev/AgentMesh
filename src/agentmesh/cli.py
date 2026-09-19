@@ -136,7 +136,7 @@ async def _watch(client: httpx.AsyncClient, api: str, run_id: str) -> int:
     exit_code = 0
     async with client.stream("GET", f"{api}/runs/{run_id}/stream", timeout=None) as response:
         if response.status_code >= 400:
-            print(f"HTTP {response.status_code}: {await response.aread()}", file=sys.stderr)
+            print(f"HTTP {response.status_code}: {await response.aread()!r}", file=sys.stderr)
             return 1
         event_name = ""
         async for line in response.aiter_lines():
@@ -152,7 +152,7 @@ async def _watch(client: httpx.AsyncClient, api: str, run_id: str) -> int:
     return exit_code
 
 
-async def _poll(client: httpx.AsyncClient, api: str, run_id: str, timeout: float) -> int:
+async def _poll(client: httpx.AsyncClient, api: str, run_id: str, timeout: float) -> int:  # noqa: ASYNC109
     deadline = asyncio.get_running_loop().time() + timeout
     seen = ""
     while asyncio.get_running_loop().time() < deadline:
@@ -241,7 +241,7 @@ async def _probe_store(settings: Settings) -> bool:
 
     try:
         store = await create_store(settings)
-    except Exception as exc:  # noqa: BLE001 - doctor reports, never crashes
+    except Exception as exc:
         print(f"  ! {type(exc).__name__}: {exc}")
         return False
     try:
