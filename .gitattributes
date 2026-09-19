@@ -1,0 +1,16 @@
+# Normalise line endings on checkout so Windows contributors cannot break the
+# shell scripts and the container build.
+* text=auto eol=lf
+
+*.sh      text eol=lf
+Makefile  text eol=lf
+Dockerfile text eol=lf
+*.yml     text eol=lf
+*.yaml    text eol=lf
+*.py      text eol=lf
+
+*.png     binary
+*.jpg     binary
+*.gif     binary
+*.pdf     binary
+

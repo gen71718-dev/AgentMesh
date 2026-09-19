@@ -1,0 +1,90 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: test (py${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Install the project
+        run: uv sync --extra dev --python ${{ matrix.python-version }}
+
+      - name: Lint
+        run: uv run ruff check src tests examples
+
+      - name: Format check
+        run: uv run ruff format --check src tests examples
+
+      - name: Type check
+        run: uv run mypy
+
+      - name: Test
+        run: uv run pytest --cov=agentmesh --cov-report=term-missing --cov-report=xml
+
+      - name: Upload coverage
+        if: matrix.python-version == '3.11'
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: coverage.xml
+          if-no-files-found: ignore
+
+  docker:
+    name: docker image
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Build
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: false
+          load: true
+          tags: agentmesh:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Smoke test the image
+        run: |
+          set -eux
+          docker run -d --name agentmesh-api -p 8000:8000 \
+            -e AGENTMESH_LLM_PROVIDER=mock \
+            -e AGENTMESH_STATE_BACKEND=memory \
+            agentmesh:ci api
+
+          for _ in $(seq 1 30); do
+            if curl -fsS http://localhost:8000/healthz > /dev/null; then break; fi
+            sleep 2
+          done
+
+          curl -fsS http://localhost:8000/healthz
+          curl -fsS http://localhost:8000/api/v1/agents
+          curl -fsS http://localhost:8000/api/v1/tools
+
+          docker logs agentmesh-api
+          docker rm -f agentmesh-api

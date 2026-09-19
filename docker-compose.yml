@@ -1,0 +1,82 @@
+name: agentmesh
+
+# Shared app definition. `.env` is picked up automatically when present.
+x-app: &app
+  build:
+    context: .
+    dockerfile: Dockerfile
+  image: agentmesh:local
+  env_file:
+    - path: .env
+      required: false
+  environment:
+    AGENTMESH_STATE_BACKEND: redis
+    AGENTMESH_CHECKPOINT_BACKEND: redis
+    AGENTMESH_EXECUTION_MODE: queue
+    AGENTMESH_REDIS_URL: redis://redis:6379/0
+    AGENTMESH_KNOWLEDGE_DIR: /app/knowledge
+    AGENTMESH_LOG_JSON: "true"
+  depends_on:
+    redis:
+      condition: service_healthy
+  restart: unless-stopped
+
+services:
+  redis:
+    image: redis:7.4-alpine
+    command:
+      - redis-server
+      - --appendonly
+      - "yes"
+      - --appendfsync
+      - everysec
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    restart: unless-stopped
+
+  api:
+    <<: *app
+    command: ["api"]
+    ports:
+      - "8000:8000"
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import sys,urllib.request; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8000/healthz', timeout=4).status == 200 else 1)"
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  worker:
+    <<: *app
+    command: ["worker"]
+    # Scale horizontally:  docker compose up -d --scale worker=4
+    deploy:
+      replicas: 2
+
+  # Optional local model runtime:
+  #   docker compose --profile ollama up -d
+  #   docker compose exec ollama ollama pull llama3.2
+  #   AGENTMESH_LLM_PROVIDER=ollama AGENTMESH_LLM_MODEL=llama3.2 docker compose up -d api worker
+  ollama:
+    image: ollama/ollama:latest
+    profiles: ["ollama"]
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama-data:/root/.ollama
+    restart: unless-stopped
+
+volumes:
+  redis-data:
+  ollama-data:
