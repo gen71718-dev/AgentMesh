@@ -56,7 +56,7 @@ docker-build: ## Build the Docker image
 .PHONY: up
 up: ## Start redis + api + workers
 	$(COMPOSE) up -d --build
-	@echo "API docs: http://localhost:8000/docs"
+	@echo "API docs: http://localhost:8100/docs"
 
 .PHONY: down
 down: ## Stop the stack

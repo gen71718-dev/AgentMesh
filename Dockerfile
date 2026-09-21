@@ -34,7 +34,7 @@ ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
     PATH="/opt/venv/bin:$PATH" \
     AGENTMESH_HOST=0.0.0.0 \
-    AGENTMESH_PORT=8000 \
+    AGENTMESH_PORT=8100 \
     AGENTMESH_KNOWLEDGE_DIR=/app/knowledge
 
 RUN apt-get update \
@@ -50,10 +50,10 @@ COPY --chown=agentmesh:agentmesh docs/knowledge /app/knowledge
 RUN chmod 0755 /usr/local/bin/agentmesh-entrypoint
 
 USER agentmesh
-EXPOSE 8000
+EXPOSE 8100
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
-    CMD python -c 'import os,sys,urllib.request; url="http://127.0.0.1:"+os.getenv("AGENTMESH_PORT","8000")+"/healthz"; sys.exit(0 if urllib.request.urlopen(url, timeout=4).status == 200 else 1)'
+    CMD python -c 'import os,sys,urllib.request; url="http://127.0.0.1:"+os.getenv("AGENTMESH_PORT","8100")+"/healthz"; sys.exit(0 if urllib.request.urlopen(url, timeout=4).status == 200 else 1)'
 
 ENTRYPOINT ["agentmesh-entrypoint"]
 CMD ["api"]

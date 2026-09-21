@@ -41,7 +41,7 @@ class Settings(BaseSettings):
     log_level: LogLevel = "INFO"
     log_json: bool = True
     host: str = "0.0.0.0"
-    port: int = Field(default=8000, ge=1, le=65535)
+    port: int = Field(default=8100, ge=1, le=65535)
     api_prefix: str = "/api/v1"
     cors_origins: str = "*"
 

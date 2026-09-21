@@ -274,7 +274,7 @@ def _build_parser() -> argparse.ArgumentParser:
     run.add_argument("task", help="the objective for the agent team")
     run.add_argument("--agents", default=None, help="comma separated agent names")
     run.add_argument("--max-steps", dest="max_steps", type=int, default=None)
-    run.add_argument("--url", default="http://localhost:8000", help="base URL of the API")
+    run.add_argument("--url", default="http://localhost:8100", help="base URL of the API")
     run.add_argument("--timeout", type=float, default=300.0)
     run.add_argument("--watch", action="store_true", help="follow the SSE event stream")
     run.set_defaults(handler=_run)

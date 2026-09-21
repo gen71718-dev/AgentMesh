@@ -69,10 +69,10 @@ cp .env.example .env          # optional; sensible defaults are built in
 docker compose up -d --build
 ```
 
-That starts Redis, the API on <http://localhost:8000>, and two workers.
+That starts Redis, the API on <http://localhost:8100>, and two workers.
 
 ```bash
-curl -s localhost:8000/api/v1/runs \
+curl -s localhost:8100/api/v1/runs \
   -H 'content-type: application/json' \
   -d '{"task":"Explain Redis consumer groups to a new backend engineer"}'
 ```
@@ -80,16 +80,20 @@ curl -s localhost:8000/api/v1/runs \
 Follow it live:
 
 ```bash
-curl -N localhost:8000/api/v1/runs/<run_id>/stream
+curl -N localhost:8100/api/v1/runs/<run_id>/stream
 ```
 
-Interactive API docs: <http://localhost:8000/docs>.
+Interactive API docs: <http://localhost:8100/docs>.
+
+The API listens on `8100` by default, so it can sit next to the many tools
+that already claim `8000`. If `8100` is taken as well, override it: set
+`AGENTMESH_PORT=9000` in `.env`, or run `agentmesh serve --port 9000`.
 
 ### Locally, without Docker
 
 ```bash
 uv sync --extra dev                 # or: pip install -e ".[dev]"
-uv run agentmesh serve --reload     # http://localhost:8000
+uv run agentmesh serve --reload     # http://localhost:8100
 uv run agentmesh run "Explain Redis consumer groups" --watch
 ```
 
@@ -165,7 +169,7 @@ key layout and the run state machine.
 | `GET` | `/healthz`, `/readyz`, `/metrics` | Ops probes and metrics |
 
 ```bash
-curl -s localhost:8000/api/v1/runs \
+curl -s localhost:8100/api/v1/runs \
   -H 'content-type: application/json' \
   -d '{"task":"Compare Redis Streams and Kafka for a five-person team","agents":["researcher","analyst","writer"],"max_steps":6}'
 ```
@@ -183,7 +187,7 @@ Event types: `run.queued`, `run.started`, `supervisor.route`, `agent.started`,
 ```python
 import httpx
 
-with httpx.stream("GET", f"http://localhost:8000/api/v1/runs/{run_id}/stream") as stream:
+with httpx.stream("GET", f"http://localhost:8100/api/v1/runs/{run_id}/stream") as stream:
     for line in stream.iter_lines():
         if line.startswith("data: "):
             print(line[6:])

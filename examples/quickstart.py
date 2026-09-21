@@ -10,7 +10,7 @@ import sys
 
 import httpx
 
-BASE_URL = "http://localhost:8000"
+BASE_URL = "http://localhost:8100"
 API = f"{BASE_URL}/api/v1"
 TERMINAL = {"succeeded", "failed", "cancelled"}
 

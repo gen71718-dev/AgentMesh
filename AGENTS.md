@@ -21,7 +21,7 @@ uv run ruff format src tests examples
 uv run mypy
 uv run agentmesh doctor             # effective config + connectivity
 uv run agentmesh run "task" --watch # needs a running server
-uv run agentmesh serve              # http://localhost:8000/docs
+uv run agentmesh serve              # http://localhost:8100/docs
 ```
 
 Always run `ruff check`, `mypy` and `pytest` before declaring work finished.

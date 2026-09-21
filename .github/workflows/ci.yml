@@ -72,19 +72,19 @@ jobs:
       - name: Smoke test the image
         run: |
           set -eux
-          docker run -d --name agentmesh-api -p 8000:8000 \
+          docker run -d --name agentmesh-api -p 8100:8100 \
             -e AGENTMESH_LLM_PROVIDER=mock \
             -e AGENTMESH_STATE_BACKEND=memory \
             agentmesh:ci api
 
           for _ in $(seq 1 30); do
-            if curl -fsS http://localhost:8000/healthz > /dev/null; then break; fi
+            if curl -fsS http://localhost:8100/healthz > /dev/null; then break; fi
             sleep 2
           done
 
-          curl -fsS http://localhost:8000/healthz
-          curl -fsS http://localhost:8000/api/v1/agents
-          curl -fsS http://localhost:8000/api/v1/tools
+          curl -fsS http://localhost:8100/healthz
+          curl -fsS http://localhost:8100/api/v1/agents
+          curl -fsS http://localhost:8100/api/v1/tools
 
           docker logs agentmesh-api
           docker rm -f agentmesh-api

@@ -45,10 +45,10 @@ cp .env.example .env          # 可选，默认值开箱可用
 docker compose up -d --build
 ```
 
-会启动 Redis、API（<http://localhost:8000>）和两个 worker。
+会启动 Redis、API（<http://localhost:8100>）和两个 worker。
 
 ```bash
-curl -s localhost:8000/api/v1/runs \
+curl -s localhost:8100/api/v1/runs \
   -H 'content-type: application/json' \
   -d '{"task":"给一个新入职的后端工程师讲清楚 Redis 消费者组"}'
 ```
@@ -56,16 +56,20 @@ curl -s localhost:8000/api/v1/runs \
 实时跟踪：
 
 ```bash
-curl -N localhost:8000/api/v1/runs/<run_id>/stream
+curl -N localhost:8100/api/v1/runs/<run_id>/stream
 ```
 
-在线 API 文档：<http://localhost:8000/docs>。
+在线 API 文档：<http://localhost:8100/docs>。
+
+API 默认监听 `8100`，这样可以和大量默认占用 `8000` 的程序共存。
+如果 `8100` 也被占用，改一个端口即可：在 `.env` 里设置
+`AGENTMESH_PORT=9000`，或运行 `agentmesh serve --port 9000`。
 
 ### 本地运行（不用 Docker）
 
 ```bash
 uv sync --extra dev                 # 或者 pip install -e ".[dev]"
-uv run agentmesh serve --reload     # http://localhost:8000
+uv run agentmesh serve --reload     # http://localhost:8100
 uv run agentmesh run "讲清楚 Redis 消费者组" --watch
 ```
 
@@ -137,7 +141,7 @@ supervisor 每轮看到目标、候选专家和目前所有报告，然后只回
 | `GET` | `/healthz`、`/readyz`、`/metrics` | 运维探针与指标 |
 
 ```bash
-curl -s localhost:8000/api/v1/runs \
+curl -s localhost:8100/api/v1/runs \
   -H 'content-type: application/json' \
   -d '{"task":"对比 Redis Streams 和 Kafka 对五人团队的取舍","agents":["researcher","analyst","writer"],"max_steps":6}'
 ```
