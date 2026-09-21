@@ -21,7 +21,7 @@ AgentMesh 就是这些问题的答案。
 - **五个内置专家**：`researcher`（调研）、`analyst`（量化分析）、`coder`（工程）、
   `writer`（写作）、`critic`（红队评审），各自有工具、提示词和报告格式约定。
 - **五个内置工具**：`web_search`（Tavily）、`knowledge_search`（本地文档检索）、
-  `calculator`、`python_repl`（受限沙箱，默认关闭）、`current_time`，并提供工具注册表。
+  `calculator`、`python_repl`、`current_time`，并提供工具注册表。
 - **模型可插拔**：OpenAI / Anthropic / Ollama / 确定性 mock，编排代码里没有任何厂商 SDK。
 - **正经用 Redis**：用 Stream + 消费者组做任务队列并支持 `XAUTOCLAIM` 故障回收；每个 run
   一条 Stream 作为可回放的事件日志；`INCR` 做事件序号；run 文档带 TTL；并可选接入
