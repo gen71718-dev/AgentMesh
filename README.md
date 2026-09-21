@@ -45,7 +45,7 @@ afternoon.
 - **Redis, used properly** - a stream as the work queue with a consumer group and
   `XAUTOCLAIM` recovery, a stream per run as a replayable event log, `INCR`
   sequence counters, TTL'd run documents, and an optional Redis checkpointer for
-  LangGraph.
+  LangGraph (needs Redis Stack, see below).
 - **Zero-dependency mode** - `AGENTMESH_STATE_BACKEND=memory` swaps Redis for an
   in-process implementation of the same interface, so tests and local dev need
   nothing but Python.
@@ -203,7 +203,7 @@ lists them all with commentary. The ones that change how the system behaves:
 | `AGENTMESH_LLM_PROVIDER` | `mock` | `mock`, `openai`, `anthropic` or `ollama` |
 | `AGENTMESH_LLM_MODEL` | `gpt-4o-mini` | Model name for the chosen provider |
 | `AGENTMESH_STATE_BACKEND` | `memory` | `memory` or `redis` |
-| `AGENTMESH_CHECKPOINT_BACKEND` | `memory` | `memory` or `redis` |
+| `AGENTMESH_CHECKPOINT_BACKEND` | `memory` | `memory` or `redis` (redis needs a Redis Stack server) |
 | `AGENTMESH_EXECUTION_MODE` | `inline` | `inline` or `queue` (queue needs redis) |
 | `AGENTMESH_WORKER_CONCURRENCY` | `4` | Concurrent runs per worker process |
 | `AGENTMESH_MAX_SUPERVISOR_STEPS` | `8` | Hard ceiling on routing decisions per run |

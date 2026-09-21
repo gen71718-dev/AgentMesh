@@ -25,7 +25,7 @@ AgentMesh 就是这些问题的答案。
 - **模型可插拔**：OpenAI / Anthropic / Ollama / 确定性 mock，编排代码里没有任何厂商 SDK。
 - **正经用 Redis**：用 Stream + 消费者组做任务队列并支持 `XAUTOCLAIM` 故障回收；每个 run
   一条 Stream 作为可回放的事件日志；`INCR` 做事件序号；run 文档带 TTL；并可选接入
-  LangGraph 的 Redis checkpointer。
+  LangGraph 的 Redis checkpointer（需要 Redis Stack，见下文）。
 - **零依赖模式**：`AGENTMESH_STATE_BACKEND=memory` 用同一套接口的内存实现替换 Redis，
   本地开发和测试除 Python 外什么都不需要。
 - **两种执行模式**：`inline`（API 进程内直接跑图）或 `queue`（独立 worker 集群消费队列）。
@@ -164,7 +164,7 @@ curl -s localhost:8100/api/v1/runs \
 | `AGENTMESH_LLM_PROVIDER` | `mock` | `mock` / `openai` / `anthropic` / `ollama` |
 | `AGENTMESH_LLM_MODEL` | `gpt-4o-mini` | 模型名 |
 | `AGENTMESH_STATE_BACKEND` | `memory` | `memory` 或 `redis` |
-| `AGENTMESH_CHECKPOINT_BACKEND` | `memory` | `memory` 或 `redis` |
+| `AGENTMESH_CHECKPOINT_BACKEND` | `memory` | `memory` 或 `redis`（redis 需要 Redis Stack 服务端） |
 | `AGENTMESH_EXECUTION_MODE` | `inline` | `inline` 或 `queue`（queue 需要 redis） |
 | `AGENTMESH_WORKER_CONCURRENCY` | `4` | 每个 worker 进程的并发 run 数 |
 | `AGENTMESH_MAX_SUPERVISOR_STEPS` | `8` | 单个 run 的路由次数上限 |

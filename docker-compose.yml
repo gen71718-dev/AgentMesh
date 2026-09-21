@@ -11,7 +11,11 @@ x-app: &app
       required: false
   environment:
     AGENTMESH_STATE_BACKEND: redis
-    AGENTMESH_CHECKPOINT_BACKEND: redis
+    # Memory on purpose: the LangGraph Redis checkpointer indexes with
+    # RediSearch (FT.*) and the plain redis image below has no such module, so
+    # `redis` here would only stall startup. Switch both together if you want
+    # resumable runs: redis/redis-stack-server + AGENTMESH_CHECKPOINT_BACKEND=redis.
+    AGENTMESH_CHECKPOINT_BACKEND: memory
     AGENTMESH_EXECUTION_MODE: queue
     AGENTMESH_REDIS_URL: redis://redis:6379/0
     AGENTMESH_KNOWLEDGE_DIR: /app/knowledge

@@ -216,8 +216,10 @@ be able to tell what happened.
 * `memory` - an `InMemorySaver`, process-local, sufficient for `inline` mode.
 * `redis` - `AsyncRedisSaver`, so a run's state survives a restart and can be
   resumed by replaying the same `thread_id`. Needs `langgraph-checkpoint-redis`;
-  if the import fails, AgentMesh logs a warning and falls back to memory rather
-  than refusing to start.
+  it indexes its checkpoints with RediSearch, so it also needs a Redis Stack
+  server (`redis/redis-stack-server`) - a plain `redis-server` answers
+  `unknown command 'FT.INFO'`. If the import or the setup fails, AgentMesh logs a
+  warning with the fix and falls back to memory rather than refusing to start.
 
 The run's `thread_id` is generated with the run record and returned by
 `POST /runs`, so a client always holds the handle it needs to resume or inspect
