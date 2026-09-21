@@ -30,8 +30,11 @@ services:
       - "yes"
       - --appendfsync
       - everysec
-    ports:
-      - "6379:6379"
+    # Deliberately not published to the host: the api and the workers reach
+    # Redis over the compose network as redis://redis:6379/0, and publishing
+    # it would collide with the Redis another local stack very likely already
+    # owns on 6379. Want a shell?   docker compose exec redis redis-cli
+    # Need it on the host anyway?  add:  ports: ["6399:6379"]
     volumes:
       - redis-data:/data
     healthcheck:
