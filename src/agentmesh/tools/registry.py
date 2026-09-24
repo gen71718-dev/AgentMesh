@@ -15,7 +15,7 @@ log = get_logger("tools")
 
 Availability = Callable[[], "tuple[bool, str]"]
 
-
+""" 工具“登记卡” """
 @dataclass(frozen=True, slots=True)
 class ToolSpec:
     """Everything needed to describe and lazily build a tool."""
