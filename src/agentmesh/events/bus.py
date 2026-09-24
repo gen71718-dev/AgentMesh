@@ -47,6 +47,7 @@ class EventBus:
         )
         if created_at is not None:
             event.created_at = created_at
+            """best effort(尽力而为)持久化,只打warning不中断run"""
         try:
             return await self._store.append_event(event)
         except StoreError as exc:
