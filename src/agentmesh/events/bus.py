@@ -64,7 +64,7 @@ _BUS: EventBus | None = None
 
 
 def init_bus(store: RunStore) -> EventBus:
-    """Install the process-wide bus. Called once from the app lifespan."""
+    """Install the process-wide bus. Called once from the app lifespan/应用启动时lifespan调用一次，完成初始化"""
     global _BUS
     _BUS = EventBus(store)
     return _BUS
