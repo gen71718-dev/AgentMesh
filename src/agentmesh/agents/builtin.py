@@ -10,6 +10,7 @@ from agentmesh.agents.registry import register_agent
 from agentmesh.agents.spec import AgentDefinition
 
 _HOUSE_STYLE = """
+5条规则
 Working rules
 -------------
 1. Work only on the objective you were given. Another agent owns everything else.
@@ -19,7 +20,7 @@ Working rules
    verify something, say so explicitly under "Open questions".
 4. Finish with a compact, self-contained report. No preamble, no filler, and do
    not repeat the instructions back to the reader.
-5. Prefer concrete nouns and numbers over adjectives. Keep it under 300 words
+5. Prefer concrete nouns and numbers over odjectives. Keep it under 300 words
    unless the objective explicitly asks for more.
 """.strip()
 
@@ -41,7 +42,7 @@ RESEARCHER = AgentDefinition(
 Your job is to collect the evidence the team needs, and to be explicit about
 what the evidence does and does not support.
 
-Report format
+Report format（五个工具通用的固定格式，便于相互协作）
 -------------
 Findings    - the facts you established, each with its source.
 Sources     - URLs, file paths or "model knowledge (unverified)".
