@@ -2,7 +2,7 @@
 
 Kept pure and dependency-free so it can be exhaustively unit tested: real
 models drift from the requested format, and a routing bug is silent and
-expensive.
+expensive.保持纯函数，零依赖。优点：不会报错，缺点：潜在隐患，会烧token（有终止机制兜底）
 """
 
 from __future__ import annotations
