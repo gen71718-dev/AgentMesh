@@ -32,6 +32,10 @@ router = APIRouter(prefix="/runs", tags=["runs"])
 TERMINAL_EVENTS = frozenset({EventType.RUN_COMPLETED, EventType.RUN_FAILED, EventType.RUN_CANCELLED})
 KEEPALIVE_MS = 15_000
 
+# Starlette 把 HTTP_422_UNPROCESSABLE_ENTITY 改名成 *_CONTENT 了，写数字可以
+# 同时兼容新旧版本，也不会触发弃用警告。
+UNPROCESSABLE_ENTITY = 422
+
 
 @router.post(
     "",
@@ -50,10 +54,10 @@ async def create_run(
     try:
         definitions = resolve_agents(payload.agents, default=settings.default_agent_list)
     except AgentNotFound as exc:
-        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(exc)) from exc
+        raise HTTPException(status_code=UNPROCESSABLE_ENTITY, detail=str(exc)) from exc
     if not definitions:
         raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=UNPROCESSABLE_ENTITY,
             detail="no agents selected: pass `agents` or set AGENTMESH_DEFAULT_AGENTS",
         )
 

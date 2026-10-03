@@ -48,7 +48,7 @@ def build_graph(
     supervisor_model: BaseChatModel | None = None,
     name: str = "agentmesh",
 ) -> Any:
-    """Compile the supervisor graph for a fixed team of specialists/完整graph流水线"""
+    """Compile the supervisor graph for a fixed team of specialists."""
     settings = settings or get_settings()
     definitions = list(agents)
 
@@ -145,8 +145,8 @@ def build_graph(
 
     def route(state: AgentState) -> str:
         return state.get("next_agent") or END
-        
-    """星型拓扑:supervisor指挥专家，每次调用完后再回到supervisor"""
+
+    # 星型拓扑：supervisor 指挥专家，专家每轮执行完都回到 supervisor。
     builder: StateGraph = StateGraph(AgentState)
     builder.add_node("supervisor", supervisor_node)
     for definition in definitions:

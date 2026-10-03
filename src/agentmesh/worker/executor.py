@@ -1,4 +1,6 @@
-"""Turn a queued run into graph execution and a terminal run record/一次任务从头到尾跑的方法"""
+"""Turn a queued run into graph execution and a terminal run record."""
+
+# 一次任务从头到尾怎么跑：开跑前查状态、跑完把终态写进记录。
 
 from __future__ import annotations
 

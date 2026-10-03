@@ -36,7 +36,9 @@ class RouteDecision:
     def is_finish(self) -> bool:
         return self.agent is None
 
-"""路由解析器设计成"解析失败就终止"。因为误判成另一个 agent，代价是浪费一步；误判成不终止，代价是无限烧钱。所以失败方向必须偏向"停"。""""
+
+# 解析不出来就当成“结束”：选错 agent 只浪费一步，该停不停会一直烧 token，
+# 所以失败方向必须偏向“停”。
 def parse_route(text: str | None, candidates: list[str] | tuple[str, ...]) -> RouteDecision:
     """Extract the next agent from a supervisor response.
 

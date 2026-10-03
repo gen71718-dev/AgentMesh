@@ -47,7 +47,7 @@ class EventBus:
         )
         if created_at is not None:
             event.created_at = created_at
-            """best effort(尽力而为)持久化,只打warning不中断run"""
+        # 事件持久化是 best-effort：失败只打 warning，不中断健康的 run。
         try:
             return await self._store.append_event(event)
         except StoreError as exc:
@@ -64,7 +64,8 @@ _BUS: EventBus | None = None
 
 
 def init_bus(store: RunStore) -> EventBus:
-    """Install the process-wide bus. Called once from the app lifespan/应用启动时lifespan调用一次，完成初始化"""
+    """Install the process-wide bus. Called once from the app lifespan."""
+    # 应用启动时由 lifespan 调用一次，完成初始化。
     global _BUS
     _BUS = EventBus(store)
     return _BUS

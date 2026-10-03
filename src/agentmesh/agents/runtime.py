@@ -61,7 +61,9 @@ def stringify_tool_output(value: Any) -> str:
 
 
 class AgentRuntime:
-    """Runs the think -> act -> observe loop for a single agent/实现think -> act -> observe循环，受 `max_tool_iterations` 限制。"""
+    """Runs the think -> act -> observe loop for a single agent."""
+
+    # 实现 think -> act -> observe 循环，循环次数受 max_tool_iterations 限制。
 
     def __init__(
         self,
