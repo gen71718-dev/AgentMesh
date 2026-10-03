@@ -61,6 +61,16 @@ curl -N localhost:8100/api/v1/runs/<run_id>/stream
 
 在线 API 文档：<http://localhost:8100/docs>。
 
+另外有一个演示控制台 `examples/demo.html`：单文件、无需构建，订阅 SSE 事件流，
+把 supervisor 的路由决策、工具调用和最终答案实时渲染出来。
+
+```bash
+python -m http.server 8080 --directory examples
+# 然后打开 http://localhost:8080/demo.html
+```
+
+它默认连接 `http://localhost:8100`（页面里可以改），所以要先启动 API。
+
 API 默认监听 `8100`，这样可以和大量默认占用 `8000` 的程序共存。
 如果 `8100` 也被占用，改一个端口即可：在 `.env` 里设置
 `AGENTMESH_PORT=9000`，或运行 `agentmesh serve --port 9000`。

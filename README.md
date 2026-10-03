@@ -85,6 +85,18 @@ curl -N localhost:8100/api/v1/runs/<run_id>/stream
 
 Interactive API docs: <http://localhost:8100/docs>.
 
+There is also a demo console at `examples/demo.html`: a single file, no build
+step, that subscribes to the SSE stream and renders routing decisions, tool
+calls and the final answer as they happen.
+
+```bash
+python -m http.server 8080 --directory examples
+# then open http://localhost:8080/demo.html
+```
+
+It talks to `http://localhost:8100` by default (the page lets you change it), so
+start the API first.
+
 The API listens on `8100` by default, so it can sit next to the many tools
 that already claim `8000`. If `8100` is taken as well, override it: set
 `AGENTMESH_PORT=9000` in `.env`, or run `agentmesh serve --port 9000`.

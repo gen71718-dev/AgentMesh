@@ -1,0 +1,294 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>AgentMesh 控制台</title>
+<style>
+  :root {
+    --bg: #0f1216; --panel: #161b22; --line: #263040; --text: #d7dee8;
+    --dim: #7d8b9e; --accent: #4a9eff; --ok: #3fb950; --warn: #d29922; --err: #f85149;
+    --route: #a371f7; --tool: #39c5cf;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font: 14px/1.5 -apple-system, "Segoe UI", "Microsoft YaHei", sans-serif;
+  }
+  header {
+    display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+    padding: 12px 18px; border-bottom: 1px solid var(--line); background: var(--panel);
+  }
+  header h1 { margin: 0; font-size: 15px; font-weight: 600; letter-spacing: .3px; }
+  header .spacer { flex: 1; }
+  input, textarea, select, button { font: inherit; color: var(--text); }
+  input, textarea {
+    background: #0b0e12; border: 1px solid var(--line); border-radius: 6px; padding: 7px 9px;
+  }
+  input:focus, textarea:focus { outline: none; border-color: var(--accent); }
+  button {
+    background: #21262d; border: 1px solid var(--line); border-radius: 6px;
+    padding: 7px 14px; cursor: pointer;
+  }
+  button:hover:not(:disabled) { border-color: var(--accent); }
+  button:disabled { opacity: .45; cursor: not-allowed; }
+  button.primary { background: var(--accent); border-color: var(--accent); color: #06203c; font-weight: 600; }
+  button.danger { color: var(--err); }
+  main { display: grid; grid-template-columns: 380px 1fr; gap: 0; height: calc(100vh - 53px); }
+  .pane { padding: 16px; overflow: auto; }
+  .pane.left { border-right: 1px solid var(--line); }
+  .label { display: block; color: var(--dim); font-size: 12px; margin: 0 0 6px; letter-spacing: .4px; }
+  .field { margin-bottom: 14px; }
+  textarea { width: 100%; min-height: 92px; resize: vertical; }
+  .agents { display: flex; flex-direction: column; gap: 7px; }
+  .agents label { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+  .agents .name { font-family: ui-monospace, Consolas, monospace; }
+  .agents .desc { color: var(--dim); font-size: 12px; }
+  .row { display: flex; gap: 8px; align-items: center; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--dim); display: inline-block; }
+  .dot.ok { background: var(--ok); } .dot.bad { background: var(--err); }
+  .meta { font-family: ui-monospace, Consolas, monospace; font-size: 12px; color: var(--dim); }
+  .meta b { color: var(--text); font-weight: 500; }
+  #events { display: flex; flex-direction: column; gap: 6px; }
+  .ev {
+    display: grid; grid-template-columns: 62px 150px 1fr; gap: 10px;
+    padding: 7px 10px; border: 1px solid var(--line); border-radius: 6px;
+    background: var(--panel); align-items: baseline;
+  }
+  .ev .t { color: var(--dim); font-family: ui-monospace, Consolas, monospace; font-size: 12px; }
+  .ev .k { font-family: ui-monospace, Consolas, monospace; font-size: 12px; font-weight: 600; }
+  .ev .d { min-width: 0; overflow-wrap: anywhere; }
+  .ev .d .sub { color: var(--dim); font-size: 12px; }
+  .ev.route { border-left: 3px solid var(--route); } .ev.route .k { color: var(--route); }
+  .ev.tool  { border-left: 3px solid var(--tool); }  .ev.tool .k  { color: var(--tool); }
+  .ev.agent { border-left: 3px solid var(--accent); } .ev.agent .k { color: var(--accent); }
+  .ev.good  { border-left: 3px solid var(--ok); }   .ev.good .k  { color: var(--ok); }
+  .ev.bad   { border-left: 3px solid var(--err); }  .ev.bad .k   { color: var(--err); }
+  .ev .k { color: var(--dim); }
+  #answer {
+    margin-top: 16px; padding: 14px; border: 1px solid var(--line); border-radius: 8px;
+    background: var(--panel); white-space: pre-wrap; display: none;
+  }
+  #answer.show { display: block; }
+  #answer h3 { margin: 0 0 8px; font-size: 12px; color: var(--ok); letter-spacing: .5px; }
+  .empty { color: var(--dim); font-size: 13px; padding: 8px 2px; }
+  @media (max-width: 900px) { main { grid-template-columns: 1fr; height: auto; } }
+</style>
+</head>
+<body>
+<header>
+  <h1>AgentMesh 控制台</h1>
+  <span class="dot" id="dot"></span>
+  <span class="meta" id="conn">未连接</span>
+  <span class="spacer"></span>
+  <label class="meta" for="base">API</label>
+  <input id="base" size="26" />
+  <button id="btnCheck">检测</button>
+  <a href="#" id="docs" target="_blank" class="meta">接口文档 →</a>
+</header>
+
+<main>
+  <section class="pane left">
+    <div class="field">
+      <label class="label" for="task">任务</label>
+      <textarea id="task">对比 Redis Stream 和 Pub/Sub，给出我们团队该选哪个的结论</textarea>
+    </div>
+
+    <div class="field">
+      <label class="label">参与团队</label>
+      <div class="agents" id="agents"><div class="empty">加载中…</div></div>
+    </div>
+
+    <div class="field">
+      <label class="label" for="steps">步数预算</label>
+      <input id="steps" type="number" min="1" max="50" value="6" style="width:90px" />
+    </div>
+
+    <div class="row">
+      <button class="primary" id="btnRun">提交任务</button>
+      <button class="danger" id="btnCancel" disabled>取消</button>
+    </div>
+
+    <div class="field" style="margin-top:14px">
+      <div class="meta" id="runinfo">尚未提交</div>
+    </div>
+  </section>
+
+  <section class="pane">
+    <label class="label">实时事件流（SSE）</label>
+    <div id="events"><div class="empty">提交任务后，这里会实时显示 supervisor 的路由决策、专家的工具调用和最终结果。</div></div>
+    <div id="answer"><h3>最终答案</h3><div id="answerText"></div></div>
+  </section>
+</main>
+
+<script>
+"use strict";
+const $ = (id) => document.getElementById(id);
+const store = {
+  base: localStorage.getItem("agentmesh.base") || "http://localhost:8100",
+  runId: null, es: null, t0: 0, count: 0,
+};
+
+const TERMINAL = new Set(["run.completed", "run.failed", "run.cancelled"]);
+const KIND = {
+  "run.queued": "good", "run.started": "agent", "run.completed": "good",
+  "run.failed": "bad", "run.cancelled": "bad",
+  "supervisor.route": "route", "agent.started": "agent", "agent.finished": "agent",
+  "tool.started": "tool", "tool.finished": "tool", "log": "",
+};
+
+function setConn(ok, text) {
+  $("dot").className = "dot " + (ok ? "ok" : "bad");
+  $("conn").textContent = text;
+}
+
+async function api(path, options) {
+  const res = await fetch(store.base + path, options);
+  const text = await res.text();
+  let body = null;
+  try { body = text ? JSON.parse(text) : null; } catch (_) { body = text; }
+  if (!res.ok) throw new Error((body && body.detail) || res.statusText);
+  return body;
+}
+
+async function check() {
+  try {
+    const info = await api("/readyz");
+    setConn(true, "readyz: " + info.status);
+  } catch (err) {
+    setConn(false, "连不上：" + err.message);
+  }
+}
+
+async function loadAgents() {
+  try {
+    const agents = await api("/api/v1/agents");
+    const box = $("agents");
+    box.innerHTML = "";
+    const preset = new Set(["researcher", "analyst", "writer"]);
+    for (const a of agents) {
+      const label = document.createElement("label");
+      const cb = document.createElement("input");
+      cb.type = "checkbox"; cb.value = a.name; cb.checked = preset.has(a.name);
+      const span = document.createElement("span");
+      span.innerHTML = '<span class="name">' + a.name + '</span> <span class="desc">' + a.title + '</span>';
+      label.append(cb, span);
+      box.append(label);
+    }
+  } catch (err) {
+    $("agents").innerHTML = '<div class="empty">读取专家列表失败：' + err.message + "</div>";
+  }
+}
+
+function clearLog() {
+  $("events").innerHTML = "";
+  $("answer").classList.remove("show");
+  $("answerText").textContent = "";
+  store.count = 0;
+}
+
+function addEvent(type, agent, message, data) {
+  const node = document.createElement("div");
+  node.className = "ev " + (KIND[type] || "");
+  const ms = store.t0 ? (performance.now() - store.t0).toFixed(0) + "ms" : "";
+  const bits = [];
+  if (data && data.next) bits.push('<span class="sub">→ <b>' + data.next + "</b>" + (data.reason ? "：" + data.reason : "") + "</span>");
+  if (data && data.tool) bits.push('<span class="sub">工具 ' + data.tool + "</span>");
+  if (data && data.ok === false) bits.push('<span class="sub" style="color:var(--err)">失败</span>');
+  if (data && data.iterations) bits.push('<span class="sub">迭代 ' + data.iterations + "</span>");
+  if (data && data.duration_ms != null) bits.push('<span class="sub">' + data.duration_ms + "ms</span>");
+  if (data && Array.isArray(data.tool_calls) && data.tool_calls.length) bits.push('<span class="sub">调用 ' + data.tool_calls.join(", ") + "</span>");
+  if (data && data.agents) bits.push('<span class="sub">团队 ' + data.agents.join(", ") + "</span>");
+  node.innerHTML =
+    '<span class="t">' + ms + "</span>" +
+    '<span class="k">' + type + "</span>" +
+    '<span class="d">' + (agent ? "<b>" + agent + "</b> " : "") + (message || "") +
+    (bits.length ? "<br>" + bits.join(" &nbsp;") : "") + "</span>";
+  $("events").append(node);
+  $("events").scrollTop = $("events").scrollHeight;
+  store.count += 1;
+}
+
+async function showResult(runId) {
+  try {
+    const r = await api("/api/v1/runs/" + runId + "/result");
+    $("answerText").textContent = r.result || "(没有产出答案)";
+    $("answer").classList.add("show");
+    $("runinfo").textContent = "run " + runId + " · " + r.status + " · " + (r.duration_ms || 0) + "ms · " + store.count + " 个事件";
+  } catch (err) {
+    addEvent("log", null, "读取结果失败：" + err.message, {});
+  }
+}
+
+function stopStream() {
+  if (store.es) { store.es.close(); store.es = null; }
+  $("btnCancel").disabled = true;
+  $("btnRun").disabled = false;
+}
+
+function watch(runId) {
+  const es = new EventSource(store.base + "/api/v1/runs/" + runId + "/stream");
+  store.es = es;
+  const types = ["run.queued","run.started","supervisor.route","agent.started","agent.finished","tool.started","tool.finished","run.completed","run.failed","run.cancelled","log"];
+  for (const t of types) {
+    es.addEventListener(t, (e) => {
+      let payload = {};
+      try { payload = JSON.parse(e.data); } catch (_) {}
+      addEvent(t, payload.agent, payload.message, payload.data || {});
+      if (TERMINAL.has(t)) { stopStream(); showResult(runId); }
+    });
+  }
+  es.onerror = () => { if (es.readyState === EventSource.CLOSED) { stopStream(); } };
+}
+
+async function submit() {
+  const task = $("task").value.trim();
+  if (!task) { alert("请先填写任务"); return; }
+  const picked = Array.from(document.querySelectorAll("#agents input:checked")).map((c) => c.value);
+  if (!picked.length) { alert("至少选择一个专家"); return; }
+
+  clearLog();
+  $("btnRun").disabled = true;
+  $("runinfo").textContent = "提交中…";
+  store.t0 = performance.now();
+
+  try {
+    const body = { task: task, agents: picked, max_steps: Number($("steps").value) || 6 };
+    const run = await api("/api/v1/runs", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    store.runId = run.run_id;
+    $("runinfo").textContent = "run " + run.run_id + " · " + run.status;
+    $("btnCancel").disabled = false;
+    watch(run.run_id);
+  } catch (err) {
+    addEvent("log", null, "提交失败：" + err.message, {});
+    $("runinfo").textContent = "提交失败";
+    $("btnRun").disabled = false;
+  }
+}
+
+async function cancel() {
+  if (!store.runId) return;
+  try { await api("/api/v1/runs/" + store.runId + "/cancel", { method: "POST" }); }
+  catch (err) { addEvent("log", null, "取消失败：" + err.message, {}); }
+}
+
+$("btnRun").addEventListener("click", submit);
+$("btnCancel").addEventListener("click", cancel);
+$("btnCheck").addEventListener("click", () => { check(); loadAgents(); });
+$("base").value = store.base;
+$("base").addEventListener("change", () => {
+  store.base = $("base").value.trim().replace(/\/$/, "");
+  localStorage.setItem("agentmesh.base", store.base);
+  $("docs").href = store.base + "/docs";
+  check(); loadAgents();
+});
+$("docs").href = store.base + "/docs";
+check();
+loadAgents();
+</script>
+</body>
+</html>
